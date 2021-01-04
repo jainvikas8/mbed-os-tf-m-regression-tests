@@ -200,6 +200,8 @@ def _execute_test():
     """
     Execute greentea runs test as specified in test_spec.json
     """
+    logging.info("Executing tests for - %s suite.." % suite)
+
     cmd = ["mbedgt", "--sync=0", "--polling-timeout", "300"]
 
     run_cmd_output_realtime(cmd, os.getcwd())
@@ -325,7 +327,6 @@ def _get_parser():
         "-m",
         "--mcu",
         help="Build for the given MCU",
-        required=True,
         choices=get_tfm_regression_targets(),
         default=None,
     )
@@ -333,8 +334,8 @@ def _get_parser():
     parser.add_argument(
         "-t",
         "--toolchain",
-        help="Build for the given toolchain (GNUARM)",
-        default="GNUARM",
+        help="Build for the given toolchain",
+        default=None,
         choices=["ARMCLANG", "GNUARM"],
     )
 
@@ -342,6 +343,13 @@ def _get_parser():
         "-b",
         "--build",
         help="Build the target only",
+        action="store_true",
+    )
+
+    parser.add_argument(
+        "-l",
+        "--list",
+        help="Print supported TF-M secure targets",
         action="store_true",
     )
 
@@ -355,6 +363,14 @@ def _main():
     signal.signal(signal.SIGINT, exit_gracefully)
     parser = _get_parser()
     args = parser.parse_args()
+
+    if args.list:
+        logging.info(
+            "Supported TF-M regression and PSA compliance targets are: {}".format(
+                ", ".join([t for t in get_tfm_regression_targets()])
+            )
+        )
+        return
 
     logging.info("Target - %s", args.mcu)
 
